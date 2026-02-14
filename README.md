@@ -27,17 +27,17 @@ Telegram delivery example:
 
 ```mermaid
 flowchart TD
-    A[User Request] --> B[API Route: /api/v1/agent/chat]
-    B --> C[Load Session + Context]
-    C --> D[Assemble Prompt + Memory]
+    A[User Request] --> B[API Route]
+    B --> C[Load Session and Context]
+    C --> D[Assemble Prompt and Memory]
     D --> E[Model Invocation]
-    E --> F{Tool Calls?}
-    F -- Yes --> G[Execute Tool(s)]
+    E --> F{Tool Calls}
+    F -- Yes --> G[Execute Tools]
     G --> H[Append Tool Results]
     H --> E
     F -- No --> I[Finalize Assistant Response]
-    I --> J[Persist Session + Metadata]
-    J --> K[Return Response / Stream Events]
+    I --> J[Persist Session and Metadata]
+    J --> K[Return Response and Stream Events]
 ```
 
 ### Core Prompt Files Used In Loop
@@ -52,7 +52,7 @@ flowchart LR
     P --> F[Orchestrator Runtime]
     F --> G[Routing]
     F --> H[Execution]
-    F --> I[Recovery / Failover]
+    F --> I[Recovery and Failover]
 ```
 
 ## Repository Layout
