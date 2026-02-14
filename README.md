@@ -21,6 +21,40 @@ Telegram delivery example:
 
 ![Astromech Telegram Delivery Example](docs/assets/telegram-delivery-example.png)
 
+## Architecture
+
+### Core Agent Loop
+
+```mermaid
+flowchart TD
+    A[User Request] --> B[API Route: /api/v1/agent/chat]
+    B --> C[Load Session + Context]
+    C --> D[Assemble Prompt + Memory]
+    D --> E[Model Invocation]
+    E --> F{Tool Calls?}
+    F -- Yes --> G[Execute Tool(s)]
+    G --> H[Append Tool Results]
+    H --> E
+    F -- No --> I[Finalize Assistant Response]
+    I --> J[Persist Session + Metadata]
+    J --> K[Return Response / Stream Events]
+```
+
+### Core Prompt Files Used In Loop
+
+```mermaid
+flowchart LR
+    A[CORE.md] --> P[Identity Prompt Assembly]
+    B[USER.md] --> P
+    C[AGENTS.md] --> P
+    D[MEMORY.md] --> P
+    E[data/identity.json] --> P
+    P --> F[Orchestrator Runtime]
+    F --> G[Routing]
+    F --> H[Execution]
+    F --> I[Recovery / Failover]
+```
+
 ## Repository Layout
 
 - `app/`: Backend application code
@@ -93,6 +127,11 @@ Community contributions are welcome.
 
 This project is currently built for tinkerers.
 It is provided as-is, without warranty of any kind, and the author is not responsible for how it is used.
+
+## Looking For Partners
+
+I am actively looking for partners and contributors to help improve Astromech.
+If you want to build this with us, join the Discord: https://discord.gg/G6EtUxAByV
 
 ## Contributing
 
