@@ -1,0 +1,240 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Astromech Custom Palette */
+  --color-charcoal-blue-50: #eef3f6;
+  --color-charcoal-blue-100: #dee7ed;
+  --color-charcoal-blue-200: #bdd0db;
+  --color-charcoal-blue-300: #9cb8c9;
+  --color-charcoal-blue-400: #7aa0b8;
+  --color-charcoal-blue-500: #5988a6;
+  --color-charcoal-blue-600: #476d85;
+  --color-charcoal-blue-700: #365263;
+  --color-charcoal-blue-800: #243742;
+  --color-charcoal-blue-900: #121b21;
+  --color-charcoal-blue-950: #0c1317;
+
+  --color-baltic-blue-50: #ecf3f8;
+  --color-baltic-blue-100: #dae7f1;
+  --color-baltic-blue-200: #b5cfe3;
+  --color-baltic-blue-300: #8fb7d6;
+  --color-baltic-blue-400: #6a9fc8;
+  --color-baltic-blue-500: #4587ba;
+  --color-baltic-blue-600: #376c95;
+  --color-baltic-blue-700: #295170;
+  --color-baltic-blue-800: #1c364a;
+  --color-baltic-blue-900: #0e1b25;
+  --color-baltic-blue-950: #0a131a;
+
+  --color-sky-reflection-50: #ecf4f9;
+  --color-sky-reflection-100: #d8e9f3;
+  --color-sky-reflection-200: #b2d4e6;
+  --color-sky-reflection-300: #8bbeda;
+  --color-sky-reflection-400: #65a9cd;
+  --color-sky-reflection-500: #3e93c1;
+  --color-sky-reflection-600: #32769a;
+  --color-sky-reflection-700: #255874;
+  --color-sky-reflection-800: #193b4d;
+  --color-sky-reflection-900: #0c1d27;
+  --color-sky-reflection-950: #09151b;
+
+  --color-honey-bronze-50: #fef6e7;
+  --color-honey-bronze-100: #fdedce;
+  --color-honey-bronze-200: #fbda9d;
+  --color-honey-bronze-300: #f9c86c;
+  --color-honey-bronze-400: #f7b53b;
+  --color-honey-bronze-500: #f5a30a;
+  --color-honey-bronze-600: #c48208;
+  --color-honey-bronze-700: #936206;
+  --color-honey-bronze-800: #624104;
+  --color-honey-bronze-900: #312102;
+  --color-honey-bronze-950: #221701;
+
+  --color-blaze-orange-50: #feefe7;
+  --color-blaze-orange-100: #fcdfcf;
+  --color-blaze-orange-200: #f9be9f;
+  --color-blaze-orange-300: #f79e6e;
+  --color-blaze-orange-400: #f47e3e;
+  --color-blaze-orange-500: #f15d0e;
+  --color-blaze-orange-600: #c14b0b;
+  --color-blaze-orange-700: #913808;
+  --color-blaze-orange-800: #602506;
+  --color-blaze-orange-900: #301303;
+  --color-blaze-orange-950: #220d02;
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #0c1317;
+  --foreground: #ecf3f8;
+  --card: #121b21;
+  --card-foreground: #dee7ed;
+  --popover: #121b21;
+  --popover-foreground: #dee7ed;
+  --primary: #4587ba;
+  --primary-foreground: #0a131a;
+  --secondary: #243742;
+  --secondary-foreground: #bdd0db;
+  --muted: #1c364a;
+  --muted-foreground: #7aa0b8;
+  --accent: #243742;
+  --accent-foreground: #ecf3f8;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #243742;
+  --input: #243742;
+  --ring: #4587ba;
+  --chart-1: #4587ba;
+  --chart-2: #3e93c1;
+  --chart-3: #f5a30a;
+  --chart-4: #f15d0e;
+  --chart-5: #5988a6;
+  --sidebar: #0c1317;
+  --sidebar-foreground: #ecf3f8;
+  --sidebar-primary: #4587ba;
+  --sidebar-primary-foreground: #0a131a;
+  --sidebar-accent: #1c364a;
+  --sidebar-accent-foreground: #ecf3f8;
+  --sidebar-border: #243742;
+  --sidebar-ring: #4587ba;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ───── Futuristic HUD Effects ───── */
+
+/* Subtle grid background for the neural memory panel */
+.hud-grid-bg {
+  background-image:
+    linear-gradient(rgba(62, 147, 193, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(62, 147, 193, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Ambient scanline overlay — use as a pseudo on a positioned parent */
+.hud-scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(62, 147, 193, 0.015) 2px,
+    rgba(62, 147, 193, 0.015) 4px
+  );
+  animation: hud-scan 8s linear infinite;
+}
+
+@keyframes hud-scan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 200px; }
+}
+
+/* Corner bracket decoration — apply to a relative container */
+.hud-bracket-box::before,
+.hud-bracket-box::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+.hud-bracket-box::before {
+  top: 0; left: 0;
+  border-top: 1px solid rgba(62, 147, 193, 0.35);
+  border-left: 1px solid rgba(62, 147, 193, 0.35);
+}
+.hud-bracket-box::after {
+  bottom: 0; right: 0;
+  border-bottom: 1px solid rgba(62, 147, 193, 0.35);
+  border-right: 1px solid rgba(62, 147, 193, 0.35);
+}
+
+/* Neon glow pulse — for section headers */
+@keyframes neon-pulse {
+  0%, 100% { text-shadow: 0 0 4px rgba(62, 147, 193, 0.4), 0 0 8px rgba(62, 147, 193, 0.15); }
+  50%      { text-shadow: 0 0 8px rgba(62, 147, 193, 0.6), 0 0 20px rgba(62, 147, 193, 0.25); }
+}
+.neon-text {
+  animation: neon-pulse 4s ease-in-out infinite;
+}
+
+/* Sidebar glowing border */
+.hud-border-glow {
+  position: relative;
+}
+.hud-border-glow::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(62, 147, 193, 0.25) 30%,
+    rgba(62, 147, 193, 0.4) 50%,
+    rgba(62, 147, 193, 0.25) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+.hud-border-glow-right::after {
+  right: 0;
+}
+.hud-border-glow-left::after {
+  left: 0;
+}

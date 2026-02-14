@@ -1,0 +1,157 @@
+# Changelog
+
+## v0.10.0 - 2026-02-14
+
+- First `v0.10.0` release aligned to Semantic Versioning (`MAJOR.MINOR.PATCH`).
+- Open-source release readiness hardening:
+  - Consolidated tests into `tests/unit` and `tests/manual` with `pytest.ini`.
+  - Reorganized root utility scripts into structured `scripts/` subfolders.
+  - Added contributor/release docs (`CONTRIBUTING.md`, `docs/open_source_release_audit.md`, `scripts/README.md`).
+  - Completed security/privacy cleanup pass for accidental local artifact leakage.
+- Documentation and presentation updates:
+  - Refreshed `README.md` for public onboarding.
+  - Added logo and Telegram delivery screenshot to `README.md`.
+
+## Unreleased
+
+- Repository hygiene and script organization:
+  - Moved internal root utility scripts into structured subfolders under `scripts/`:
+    - `scripts/debug/`
+    - `scripts/maintenance/`
+    - `scripts/integrations/google_workspace/`
+    - `scripts/llm/`
+  - Added `scripts/README.md` to document script taxonomy and usage expectations.
+  - Updated moved scripts to resolve repository paths robustly (no fragile current-working-directory assumptions).
+  - Updated references in `app/skills/gemini/SKILL.md`, `AGENTS.md`, and `README.md`.
+
+- Security/privacy hygiene pass for open-source readiness:
+  - Removed local auth and mailbox artifacts from the repository root (`gmail_output.txt`, `auth_start.png`, `auth_email_submitted.png`, `google_login.png`, `test_browser.png`).
+  - Sanitized `USER.md` default profile values to deployment-neutral placeholders.
+  - Replaced personal-name examples in `scripts/integrations/google_workspace/email_triage.py`, `app/tools/memory_tools.py`, and `tests/unit/test_user_profile_preferences.py` with generic placeholders.
+  - Added `.gitignore` entries to prevent re-adding local auth/debug artifacts and LinkedIn bot local data files.
+  - Sanitized `LinkedIn-Easy-Apply-Bot/config.yaml` local path defaults to relative placeholders.
+
+- Repository release-readiness cleanup:
+  - Moved root-level `test_*.py` scripts into a unified `tests/` layout:
+    - Automated pytest tests in `tests/unit/`
+    - Manual smoke/integration scripts in `tests/manual/`
+  - Added `pytest.ini` to scope default test runs to stable automated tests.
+  - Updated `.gitignore` with pytest/coverage artifacts.
+  - Rewrote `README.md` for open-source onboarding (setup, testing, structure, contribution flow).
+  - Added `docs/open_source_release_audit.md` and `CONTRIBUTING.md`.
+
+- Added structured approval handshakes to prevent Action ID loops during blocked tool calls:
+  - `app/agents/orchestrator_tool_runner.py` now returns JSON `approval_pending` payloads for Guardian-blocked tools instead of only narrative text.
+  - `app/tools/approval_tools.py` adds a first-class `approve_action` tool so users can approve pending actions in-chat.
+  - `app/core/approval_execution.py` + `app/api/agent_routes.py` now execute approved pending tool-call actions immediately (`approve_and_execute` behavior), so approval does not require manual re-prompt/retry loops.
+  - Added `AGENT_AUTO_APPROVE_TOOL_ACTIONS` (`app/core/config.py`, `.env.example`) to let operator-controlled environments bypass Guardian prompts and execute restricted tool actions immediately.
+  - `app/core/guardian.py` now reuses existing pending action IDs for identical restricted tool signatures and caches approved signatures.
+  - `app/agents/orchestrator_execution_tool_path.py` now short-circuits the turn on pending approvals and returns a clean Action ID list, reducing repeated retry loops.
+  - `app/agents/orchestrator.py` now registers approval tools by default.
+
+- Added cron isolation and safer self-modification guardrails:
+  - `app/core/cron.py` now supports per-job `session_mode` (`queued` or `isolated`), with isolated jobs running immediately in dedicated sessions (`cron:<job_id>`) instead of waiting for heartbeat queue execution.
+  - `app/core/db.py`, `app/api/task_routes.py`, and `app/tools/task_tools.py` now persist/expose `session_mode` for scheduled jobs, including run-now responses for isolated starts.
+  - `app/tools/self_modify_tools.py` adds strict `self_apply_patch` support (`*** Begin Patch` / `*** End Patch`) while retaining backward-compatible `self_modify_code`.
+  - `app/core/guardian.py` now applies consistent path-based approval checks for `self_modify_code`, `self_apply_patch`, `write_local_file`, and `replace_text_in_file` on sensitive runtime paths.
+  - `app/agents/orchestrator_planning.py` and `app/agents/orchestrator_context.py` now recognize cron isolated sessions for planning/channel behavior.
+
+- Added token usage telemetry across backend and frontend surfaces:
+  - `app/agents/orchestrator_run.py` now includes `token_usage` estimates in run metadata (`input_tokens_estimate`, `output_tokens_estimate`, `total_tokens_estimate`) using `approx_chars_div4`.
+  - `frontend/app/page.tsx` now shows per-bubble token estimates (prompt/completion) and assistant total estimate metadata.
+  - `frontend/app/page.tsx` now publishes session token summaries to local storage (`astromech_token_usage`).
+  - `frontend/components/sidebar-nav.tsx` now renders a compact token report (P/C/T) in the left nav and syncs updates live.
+- Reduced skill prompt bloat and naming drift in `app/skills/loader.py`:
+  - `format_skills_for_prompt()` now defaults to metadata-only skill injection (name + description), instead of inlining full `SKILL.md` instructions for every skill on every run.
+  - Added prompt-time brand normalization so legacy `Codex` wording in skill metadata/instructions is rendered as `Astromech` in runtime prompts.
+- Added first-class outbound channel delivery from the orchestrator:
+  - New `channel_send_message` tool in `app/tools/channel_tools.py` supports `telegram` and `discord` sends.
+  - Registered channel tool loading in `app/agents/orchestrator.py` so core chat runs can execute channel delivery tasks.
+  - Added optional channel target defaults in `app/core/config.py` / `.env.example`:
+    - `TELEGRAM_DEFAULT_CHAT_ID`
+    - `DISCORD_DEFAULT_CHANNEL_ID`
+  - Fixed malformed merge markers in `.env.example` under the channel skill section.
+- Expanded core runtime guidance in prompt files:
+  - `AGENTS.md`: added session bootstrap read order, prompt mode behavior contract (`full`/`minimal`/`none`), memory boundaries, channel response norms, and heartbeat doctrine.
+  - `MEMORY.md`: added explicit long-term memory inclusion/exclusion rules, write policy, and privacy/context boundaries.
+- Fixed recurring duplicate Scheduled Cron jobs by changing logical identity to `name + cron_expression`:
+  - `app/core/cron.py` now deduplicates persisted jobs on load using name/schedule (not task prompt text).
+  - `app/api/task_routes.py` and `frontend/app/page.tsx` now apply the same dedupe key when listing/rendering cron jobs.
+- Fixed scheduled-job queue visibility and stale execution handling:
+  - `frontend/app/page.tsx`: Active Queue now shows `[Scheduled]` tasks only when `in_progress` (not while merely pending).
+  - `app/core/scheduler.py`: scheduled tasks stuck `in_progress` are marked stale after 900s to prevent long-lived phantom "running" entries.
+- FE-013 Protocol Queue & History refinements:
+  - Removed the circular completion ring/label from `frontend/components/protocol-hud.tsx`.
+  - Improved active queue refresh cadence in `frontend/app/page.tsx` (1s polling on Queue tab, 5s on History).
+  - Added cron-job dedupe in both backend (`app/api/task_routes.py`) and frontend (`frontend/app/page.tsx`) to prevent duplicate scheduled jobs in the list.
+- Hardened failover chain construction in `app/agents/failover.py` so if runtime config has fewer than two active models, the chain seeds additional fallback candidates from default model presets for enabled providers.
+- Re-enabled the OpenRouter `default` active model in runtime config (`data/models.json`) to prevent single-model failover exhaustion.
+- Updated OpenRouter model routing defaults:
+  - Primary (`default`) model set to `arcee-ai/trinity-large-preview:free`.
+  - Fallback (`smart`) model set to `qwen/qwen3-vl-30b-a3b-thinking`.
+  - Applied in both runtime config (`data/models.json`) and bootstrap defaults (`app/core/models_config.py`).
+- Improved failover behavior for tool-calling turns in `app/agents/orchestrator_execution_recovery.py`: when tools are required, the recovery path now skips NVIDIA candidates (which currently emit tool-support warnings) and advances to the next compatible model.
+- Strengthened personality consistency in responses:
+  - Expanded `CORE.md` with explicit Voice Style and Response Pattern guidance.
+  - Added runtime `PERSONALITY ENFORCEMENT` instructions in `app/agents/orchestrator_execution_prompt_context.py` so character tone persists after tool calls/failover.
+- Fixed core identity prompt file resolution to use repository-absolute paths in `app/core/identity.py`, ensuring `CORE.md`, `USER.md`, `AGENTS.md`, and `MEMORY.md` are consistently loaded regardless of process working directory.
+- Fixed streamed response spacing regressions in `app/core/response_formatter.py` by preserving chunk-boundary whitespace during channel chunking.
+- Set OpenRouter as the default LLM provider across runtime defaults and configuration surfaces:
+  - Updated backend default provider to `openrouter` in `app/core/config.py` and `.env.example`.
+  - Updated model registry defaults in `app/core/models_config.py` and `data/models.json` to use OpenRouter as the `default` model route.
+  - Added `OPENROUTER_API_KEY` to the Vault "LLM Providers" UI group in `frontend/app/vault/page.tsx`.
+  - Added explicit OpenRouter protocol option in the Model Registry provider-creation UI (`frontend/app/models/page.tsx`).
+- Fixed backend run stalls during prompt evaluation/routing by adding bounded meta-LLM timeouts in `app/agents/orchestrator_planning.py` and restoring missing settings import needed by plan-approval checks.
+- Fixed streaming chat hangs where execution could appear stuck after `evaluating`:
+  - `app/agents/orchestrator.py` now uses a fast Gemini meta-model for evaluator/router by default (with fallback to configured default).
+  - `app/agents/orchestrator_execution_recovery.py` now enforces hard LLM deadlines without waiting on slow provider cancellation.
+  - `app/agents/orchestrator_execution.py` caps per-call execution timeout to 30s to trigger failover sooner.
+  - `app/agents/error_handler.py` now treats timeout errors as model-rotation events so failover happens immediately instead of retrying the same provider.
+- Added lane-based run scheduling for agent chats:
+  - New `RunLaneQueue` (`app/agents/run_lane_queue.py`) provides FIFO queueing with global concurrency limits and per-session serialization.
+  - Chat endpoints now acquire a queue lease before execution (`app/api/agent_routes.py`) so concurrent requests to the same session do not run in parallel.
+  - Added queue diagnostics endpoint `GET /api/v1/agent/runs/queue` and `queued` status support in `GET /api/v1/agent/runs/{session_id}/status`.
+  - Added config knobs `AGENT_MAX_CONCURRENT_RUNS` and `AGENT_QUEUE_WAIT_TIMEOUT_SECONDS` in `app/core/config.py` / `.env.example`.
+- Added an operational CLI command suite in `cli.py` with `chat`, `status`, `health`, and `doctor` subcommands, including JSON output mode for automation and clearer runtime diagnostics.
+- Added a local node runtime with API and tool integration:
+  - New `app/core/node_runtime.py` provides local node discovery and action invocation (`system.notify`, policy-gated `system.run`).
+  - New node API routes in `app/api/node_routes.py` (`GET /api/v1/nodes`, `POST /api/v1/nodes/invoke`) and router registration in `app/main.py`.
+  - New orchestrator tools in `app/tools/node_tools.py` (`node_list`, `node_invoke`) registered in `app/agents/orchestrator.py`.
+  - Added node runtime config vars in `app/core/config.py` and `.env.example` (`NODE_RUNTIME_ENABLED`, `NODE_RUNTIME_NAME`, `NODE_RUNTIME_ALLOW_SYSTEM_RUN`).
+- Added NVIDIA NIM provider support for Moonshot Kimi (`moonshotai/kimi-k2.5`) using `langchain_nvidia_ai_endpoints.ChatNVIDIA`, including new env/config fields and model registry defaults so Astromech can run on NVIDIA-hosted Kimi.
+- Added `TELEGRAM_POLLING_ENABLED` config toggle to disable Telegram long-polling per instance, preventing `getUpdates` conflicts in multi-instance dev/deploy setups.
+- Added a Relationship Memory management panel to the dashboard sidebar (`frontend/components/relationship-memory-panel.tsx`) with list/search/add/delete controls for durable user facts via `/api/v1/memory/relationship*` endpoints.
+- Added a dedicated Relationship Memory tier for durable user facts:
+  - New store in `app/memory/relationship_memory.py` with structured fields (`tags`, `confidence`, `first_confirmed`, `last_confirmed`, `confirmations`).
+  - `app/core/user_profile.py` now extracts durable first-person facts and upserts them into relationship memory while continuing to maintain `USER.md`.
+  - `app/agents/orchestrator.py` now retrieves relationship memory first (highest priority) before generic long-term RAG retrieval.
+  - Added API endpoints in `app/api/memory_routes.py` for listing/upserting/searching/deleting relationship facts.
+- Improved agent responsiveness by adding prompt/context caching and parallel memory retrieval:
+  - `app/core/identity.py`: cached system prompt assembly with mtime-based invalidation for `data/identity.json`, `CORE.md`, `USER.md`, `AGENTS.md`, and `MEMORY.md`.
+  - `app/agents/context_manager.py`: cached pinned context file rendering by file version (`mtime`, `size`) to avoid repeated disk reads for unchanged files.
+  - `app/agents/orchestrator.py`: memory searches now run concurrently and retrieved chunks are deduplicated before context injection.
+- Hardened Telegram polling singleton lock in `app/skills/telegram/bot.py` by anchoring lock files to repo root (not current working directory), token-scoping lock names, and recovering stale lock files from dead processes.
+- Added chat prompt queueing in `frontend/app/page.tsx`: you can now submit additional prompts while a run is active, review/remove queued entries in the composer, and they execute automatically in order after the current run completes.
+- Fixed premature single-response behavior in agent execution by tightening plan-approval triggering (no longer auto-triggers on prompt length) and disabling plan approval by default (`AGENT_REQUIRE_PLAN_APPROVAL=false`).
+- Added a new `playwright-cli` skill at `app/skills/playwright-cli/` with a scriptable browser automation CLI for ordered `--step` actions, including form filling, selector clicks, coordinate clicks, waits, key presses, and screenshots.
+- Enabled incremental assistant text streaming in chat: backend now emits `response_chunk` SSE events and frontend renders assistant text progressively in the message bubble.
+- Added Aceternity-style text generation animation for assistant responses in chat (`frontend/components/ui/text-generate-effect.tsx`), with automatic fallback to Markdown renderer for rich-formatted output and for in-flight streaming messages.
+- Added a new `kimi` LLM provider path in `app/core/llm.py` with two execution modes: Moonshot OpenAI-compatible API (`KIMI_API_KEY` + `KIMI_BASE_URL`) or optional local Kimi CLI adapter (`app/core/kimi_cli_chat.py` via `KIMI_USE_CLI`).
+- Improved orchestrator resilience with configurable execution attempts and retryable tool-call retries (with backoff), plus recovery phase streaming updates during failover/reduced-context/tool-retry paths.
+- Added a glowing "Reasoning Trace" card in chat responses that shows high-level execution events (phase/intent/tool/recovery/error) from SSE metadata without exposing hidden chain-of-thought.
+- Updated the chat "Reasoning Trace" card to support collapsing and expanding per message, with a compact event count shown when collapsed.
+- Added automatic `USER.md` preference learning from first-person user phrasing (e.g., "I prefer...", "I'm into..."), with deduplication and filtering to avoid task-request noise (e.g., "I need you to...").
+- Added channel-aware response formatting/chunking across chat surfaces (`ui`, `telegram`, `discord`) via a shared formatter, including API `channel` support and platform-safe message splitting.
+- Added source-channel context propagation into the orchestrator so each run knows where the request originated (`ui`, `telegram`, `discord`, `heartbeat`, `subagent`), stores `last_channel`/`channel_history` in session metadata, and injects a `REQUEST CONTEXT` block into routing/execution prompts.
+- Refactored orchestrator internals into focused modules (`app/agents/orchestrator_types.py`, `app/agents/orchestrator_context.py`, `app/agents/orchestrator_run.py`, `app/agents/orchestrator_run_session_context.py`, `app/agents/orchestrator_run_memory_context.py`, `app/agents/orchestrator_run_execution.py`, `app/agents/orchestrator_planning.py`, `app/agents/orchestrator_memory.py`, `app/agents/orchestrator_execution.py`, `app/agents/orchestrator_execution_model_bind.py`, `app/agents/orchestrator_execution_prompt_context.py`, `app/agents/orchestrator_execution_loop.py`, `app/agents/orchestrator_execution_text_path.py`, `app/agents/orchestrator_execution_tool_path.py`, `app/agents/orchestrator_execution_recovery.py`, `app/agents/orchestrator_execution_finalize.py`, `app/agents/orchestrator_tool_runner.py`, `app/agents/orchestrator_execution_utils.py`) to reduce `app/agents/orchestrator.py` size and improve maintainability without changing public API.
+- Added a plan-first execution flow: the orchestrator can generate a structured step plan (with dependency and parallelizable classification), request approval, and enqueue approved plan steps into heartbeat tasks for long-running execution.
+- Fixed agent run stalls where execution could remain stuck at turn 1 by adding configurable run/LLM/tool timeouts and guaranteed run-registry cleanup in `app/agents/orchestrator.py`.
+- Updated live console log buffering to keep only the most recent 30 messages (frontend viewer cap and backend subscriber queue ring behavior).
+- Added `generate_image_nano_banana` tool in `app/tools/image_tools.py` for Gemini/Nano Banana image generation, with optional reference-image input and local file output.
+- Registered image generation tool in `app/agents/orchestrator.py` and added new config vars in `app/core/config.py` / `.env.example` (`NANO_BANANA_MODEL`, `GENERATED_IMAGES_DIR`).
+- Added chat file attachments with drag-and-drop and file picker in `frontend/app/page.tsx`.
+- Replaced FE-001 chat composer text box with an Aceternity-style `PlaceholdersAndVanishInput` in `frontend/app/page.tsx` and added reusable UI component `frontend/components/ui/placeholders-and-vanish-input.tsx`.
+- Added backend upload endpoints in `app/api/agent_routes.py`:
+  - `POST /api/v1/agent/uploads`
+  - `GET /api/v1/agent/uploads/{session_id}`
+- Uploaded files are now persisted under `data/uploads/<session_id>/` and pinned into session context for follow-up turns.
